@@ -3,20 +3,29 @@ import { uploadFileToW3, initializeW3UpClient } from './utils/w3-storage';
 import FormUI from './components/ui/Form';
 import { useToast } from '@chakra-ui/react'
 import { useRouter } from 'next/router';
+import axios from 'axios';
 
-const Add = ({web3, account, realEstate, escrow, escrow_address, realEstate_address}) => {
+const Add = ({ web3, account, realEstate, escrow, escrow_address, realEstate_address, hashStorage }) => {
     const toast = useToast();
     const router = useRouter();
     const fileInputRef = useRef(null);
-    console.log("RealEstate Contract Address: ",realEstate_address);
-    console.log("Escrow Contract Address: ",escrow_address);
+    console.log("RealEstate Contract Address: ", realEstate_address);
+    console.log("Escrow Contract Address: ", escrow_address);
     const [image, setImage] = useState('');
     const [price, setPrice] = useState(null);
     const [name, setName] = useState('');
+    const [beds, setBeds] = useState('');
+    const [baths, setBaths] = useState('');
+    const [sqft, setSqft] = useState(null);
     const [description, setDescription] = useState('');
+    const [address, setAddress] = useState('');
+    const [city, setCity] = useState('');
+    const [pin, setPin] = useState(null);
+    const [state, setState] = useState('');
     const [disabled, setDisabled] = useState(true);
     const [loading, setLoading] = useState(false);
-    
+    const did_all_props = "did:key:z6MkhfYqtJ5sehBMUbt82mEmijdxEGY8FmmJo98PSrTBDWht";
+
     useEffect(() => {
         toast({
             title: 'Upload Image to proceed',
@@ -26,6 +35,54 @@ const Add = ({web3, account, realEstate, escrow, escrow_address, realEstate_addr
         });
     }, []);
 
+    const verifyHashKey = async (hashKey) => {
+        const url = `https://${hashKey}.ipfs.w3s.link`;
+        try {
+            const response = await axios.get(url);
+            console.log(response.data);
+        const metadata = response.data;
+        const docHash = metadata.docHash;
+        console.log("Blockchain stored hash: ", docHash);
+        const isStored = await hashStorage.methods.isStored(docHash).call();
+        console.log("isStored: ", isStored);
+        if (isStored) {
+            toast({
+                title: 'Valid Seller',
+                description: 'You are a Valid seller!',
+                status: 'success',
+                duration: 4000,
+                isClosable: true,
+            });
+            setDisabled(false);
+        }
+        else {
+            toast({
+                title: 'Not a Valid Seller',
+                description: 'You are a Not a valid seller!',
+                status: 'error',
+                duration: 4000,
+                isClosable: true,
+            });
+            setDisabled(true);
+        }
+        }
+        catch (error) {
+            if (error.response && error.response.status === 400) {
+                console.error('Invalid hash key:', hashKey);
+                toast({
+                    title: 'Not a Valid Seller',
+                    description: 'You are a Not a valid seller!',
+                    status: 'error',
+                    duration: 4000,
+                    isClosable: true,
+                });
+                setDisabled(true);
+            } else {
+                console.error('Error verifying hash key:', error);
+            }
+        }
+    }
+
     const uploadToW3Storage = async (event) => {
         event.preventDefault();
         const file = event.target.files[0];
@@ -33,7 +90,7 @@ const Add = ({web3, account, realEstate, escrow, escrow_address, realEstate_addr
             try {
                 setLoading(true);
                 await initializeW3UpClient();
-                const cid = await uploadFileToW3(file);
+                const cid = await uploadFileToW3(file, did_all_props);
                 console.log(cid.toString());
                 const url = `https://${cid}.ipfs.w3s.link`;
                 console.log(url);
@@ -71,7 +128,7 @@ const Add = ({web3, account, realEstate, escrow, escrow_address, realEstate_addr
             const blob = new Blob([JSON.stringify(obj)], { type: 'application/json' });
             // Create a File object from the Blob
             const file = new File([blob], 'prop-metadata.json');
-            const cid = await uploadFileToW3(file);
+            const cid = await uploadFileToW3(file, did_all_props);
             console.log(cid.toString());
             await mintThenList(cid);
             setLoading(false)
@@ -110,7 +167,7 @@ const Add = ({web3, account, realEstate, escrow, escrow_address, realEstate_addr
                 status: 'success',
                 duration: 4000,
                 isClosable: true,
-              });
+            });
 
             // add nft to marketplace
             const listingPrice = web3.utils.toWei(price.toString(), 'ether');
@@ -144,12 +201,29 @@ const Add = ({web3, account, realEstate, escrow, escrow_address, realEstate_addr
         finally {
             setDisabled(true);
         }
-        
+
     };
 
     return (
         <>
-            <FormUI setName={setName} setPrice={setPrice} setDescription={setDescription} uploadToW3Storage={uploadToW3Storage} disabled={disabled} createNFT={createNFT} loading={loading} fileInputRef={fileInputRef} />
+            <FormUI
+                setName={setName}
+                setPrice={setPrice}
+                setBeds={setBeds}
+                setBaths={setBaths}
+                setSqft={setSqft}
+                setDescription={setDescription}
+                setAddress={setAddress}
+                setCity={setCity}
+                setPin={setPin}
+                setState={setState}
+                uploadToW3Storage={uploadToW3Storage}
+                disabled={disabled}
+                createNFT={createNFT}
+                loading={loading}
+                fileInputRef={fileInputRef}
+                verifyHashKey={verifyHashKey}
+            />
         </>
     );
 }

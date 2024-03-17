@@ -19,8 +19,10 @@ export const authorizeAgent = async (email) => {
       throw error;
     }
   };
-
-export const uploadFileToW3 = async (file, spaceDid = 'did:key:z6MkoGiYiNn3j6jUpB9AV2rnhDbmFJgC8J22ERyXm1iqwPkG') => {
+//realestate_verify-docs - did:key:z6MkgfG1bg3VJ2z6hacb326PVt8PHGX6cUfeb3iGYTnHTfMs
+//realestate_all-properties - did:key:z6MkhfYqtJ5sehBMUbt82mEmijdxEGY8FmmJo98PSrTBDWht
+//realestate_property-images - did:key:z6Mkqm7U5ZScA7s4kc2qVtrFumvMFFLaucp9D144hRvzFFop
+export const uploadFileToW3 = async (file, spaceDid) => {
   if (!w3upClient) {
     throw new Error('w3up client not initialized. Call initializeW3UpClient first.');
   }

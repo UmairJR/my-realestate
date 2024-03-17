@@ -1,17 +1,22 @@
 import React from 'react';
 import { useState, useEffect } from 'react';
 
-const FormUI = ({ setName, setDescription, setPrice, disabled, uploadToW3Storage, createNFT, fileInputRef, loading }) => {
+const FormUI = ({ setName, setDescription, setPrice, disabled, uploadToW3Storage, createNFT, fileInputRef, loading, verifyHashKey }) => {
+    const [hashKey, setHashKey] = useState('');
     return (
         <div className="w-full mt-5 sm:mt-8 flex justify-center">
             <div className="w-full sm:max-w-md md:max-w-lg flex flex-col gap-5">
 
                 <input
-                    type="file"
-                    className="file-input file-input-bordered file-input-primary w-full max-w-xs"
-                    onChange={uploadToW3Storage}
-                    ref={fileInputRef}
+                    type="text"
+                    placeholder="Enter Hash Key"
+                    className="input input-bordered input-primary w-full max-w-lg"
+                    onChange={(e) => setHashKey(e.target.value)}
                 />
+                <button className='btn btn-primary'
+                onClick={() => verifyHashKey(hashKey)}
+                >Submit</button>
+
                 <input
                     type="text"
                     placeholder="Enter Property Name"

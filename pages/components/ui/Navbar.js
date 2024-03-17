@@ -31,6 +31,9 @@ const NavbarUI = ({ logo, title, web3Handler, account, isInspector }) => {
             <li>
               <Link href="/">Discover </Link>
             </li>
+            <li>
+              <Link href="/verify-property" >Verify Property</Link>
+            </li>
           </ul>
         </div>
         <a className="btn btn-square btn-ghost">
@@ -42,6 +45,9 @@ const NavbarUI = ({ logo, title, web3Handler, account, isInspector }) => {
         <ul className="menu menu-horizontal px-1">
           <li>
             <Link href="/">Discover </Link>
+          </li>
+          <li>
+            <Link href="/verify-property" >Verify Property</Link>
           </li>
         </ul>
       </div>
@@ -102,6 +108,9 @@ const NavbarUI = ({ logo, title, web3Handler, account, isInspector }) => {
               <Link href="/add">Add Property</Link>
             </li>
             <li>
+              <Link href="/verify-property" >Verify Property</Link>
+            </li>
+            <li>
               <Link href="/owned-property">Owned Property</Link>
             </li>
             <li>
@@ -127,6 +136,9 @@ const NavbarUI = ({ logo, title, web3Handler, account, isInspector }) => {
           </li>
           <li>
             <Link href="/add">Add Property</Link>
+          </li>
+          <li>
+            <Link href="/verify-property" >Verify Property</Link>
           </li>
           <li>
             <Link href="/owned-property">Owned Property</Link>

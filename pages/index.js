@@ -3,6 +3,7 @@ import { useRouter } from "next/router";
 import Web3 from "web3";
 import RealEstate from "./abis/RealEstate.json";
 import Escrow from "./abis/Escrow.json";
+import HashStorage from "./abis/HashStorage.json"
 import Navigate from "./components/Navigate";
 import Discover from "./discover";
 import ListedProperty from "./listed-property";
@@ -17,6 +18,7 @@ import SignUp from "./signup";
 import { usePathname } from "next/navigation";
 import { onAuthStateChanged } from "firebase/auth";
 import { onValue, ref } from "firebase/database";
+import VerifyProp from "./verify-property";
 
 export default function Home() {
   const [loading, setLoading] = useState(true);
@@ -24,6 +26,7 @@ export default function Home() {
   const [account, setAccount] = useState(null);
   const [realEstate, setRealEstate] = useState(null);
   const [escrow, setEscrow] = useState(null);
+  const [hashStorage, setHashStorage] = useState(null);
   const [realEstate_address, setRealEstate_address] = useState("");
   const [escrow_address, setEscrow_address] = useState("");
   const [isInspector, setIsInspector] = useState(false);
@@ -85,7 +88,8 @@ export default function Home() {
         console.log(netId);
         const realEstate_address = RealEstate.networks[netId].address.toString();
         const escrow_address = Escrow.networks[netId].address.toString();
-        console.log("Deployed address:", realEstate_address, escrow_address);
+        const hashStorage_address = HashStorage.networks[netId].address.toString();
+        console.log("Deployed address:", realEstate_address, escrow_address, hashStorage_address);
         const realEstate = new web3Instance.eth.Contract(
           RealEstate.abi,
           realEstate_address
@@ -93,6 +97,10 @@ export default function Home() {
         const escrow = new web3Instance.eth.Contract(
           Escrow.abi,
           escrow_address
+        );
+        const hashStorage = new web3Instance.eth.Contract(
+          HashStorage.abi,
+          hashStorage_address
         );
 
         setIsInspector(accounts[0] === inspector_address.toLowerCase());
@@ -102,6 +110,7 @@ export default function Home() {
         setAccount(accounts[0]);
         setRealEstate(realEstate);
         setEscrow(escrow);
+        setHashStorage(hashStorage);
         setRealEstate_address(realEstate_address);
         setEscrow_address(escrow_address);
       } else {
@@ -172,12 +181,22 @@ export default function Home() {
                   <Add
                     realEstate={realEstate}
                     escrow={escrow}
+                    hashStorage={hashStorage}
                     web3={web3}
                     account={account}
                     realEstate_address={realEstate_address}
                     escrow_address={escrow_address}
                     aadhaarName={aadhaarName}
                   />
+                )}
+                {router.pathname === '/verify-property' && (
+                <VerifyProp 
+                hashStorage={hashStorage}
+                web3={web3} 
+                account={account} 
+                currentUserId={currentUserId} 
+                aadhaarName={aadhaarName}
+                />
                 )}
                 {router.pathname === "/owned-property" && (
                   <OwnedProperty
@@ -231,6 +250,14 @@ export default function Home() {
                     account={account}
                     isInspector={isInspector}
                   />
+                )}
+                {router.pathname === '/verify-property' && (
+                <VerifyProp 
+                hashStorage={hashStorage}
+                web3={web3} 
+                account={account} 
+                isInspector={isInspector}
+                />
                 )}
               </>
             )}
