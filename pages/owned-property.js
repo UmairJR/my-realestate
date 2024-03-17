@@ -85,6 +85,14 @@ const OwnedProperty = ({ web3, account, realEstate, escrow, escrow_address, real
                         name: metadata.name,
                         description: metadata.description,
                         image: metadata.image,
+                        price: metadata.price,
+                        beds: metadata.beds,
+                        baths: metadata.baths,
+                        sqft: metadata.sqft,
+                        address: metadata.address,
+                        city: metadata.city,
+                        pin: metadata.pin,
+                        state: metadata.state,
                         isListed: prop.propertyInfo.isListed,
                         sold: prop.sold
                     })

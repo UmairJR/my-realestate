@@ -53,7 +53,7 @@ const CardUI = ({ prop, buyProp, listProp, isInspector, isNew, isDiscover, isOwn
                             Final Approval
                         </button>);
                 }
-                else if(hasBought) {
+                else if (hasBought) {
                     return (
                         <button
                             className="btn btn-neutral btn-outline sm:btn-sm md:btn-md lg:btn-md"
@@ -167,7 +167,7 @@ const CardUI = ({ prop, buyProp, listProp, isInspector, isNew, isDiscover, isOwn
                 </div>
 
                 <p className="text-gray-500">{prop.description}</p>
-                <div className="mt-4 flex card-actions justify-between items-center">
+                <div className="mt-4 flex card-actions justify-between items-center mb-2">
                     <span className="text-primary-500 font-bold text-lg">
                         {isReList && isOwned ? (
                             <input type="number"
@@ -181,9 +181,9 @@ const CardUI = ({ prop, buyProp, listProp, isInspector, isNew, isDiscover, isOwn
                             (isDiscover && prop.price + " ETH") || (isOwned && prop.price + " ETH")
                             //|| (isSold && "Sold For " + item.totalPriceEther + " ETH") || (isPurchased && "Purchased For " + item.totalPriceEther + " ETH") 
                         )}
-                        
+
                     </span>
-                    
+
                     {!isReList ?
                         renderButton(prop, isDiscover, isOwned, account, isInspector, hasInspected, hasBought, hasSold, listProp, buyProp, sellerHandler, inspectorHandler_Approve, inspectorHandler_Reject)
                         :
@@ -195,6 +195,26 @@ const CardUI = ({ prop, buyProp, listProp, isInspector, isNew, isDiscover, isOwn
                         </button>
                     }
 
+                </div>
+                <div className="mt-4 mb-2">
+    <div className="w-1/3 pl-4 inline-block">
+        <p className="text-primary-500 font-bold text-lg mb-2">Beds</p>
+        <p className="text-primary-500 font-normal">{prop.beds}</p>
+    </div>
+    <div className="w-1/3 pr-4 inline-block">
+        <p className="text-primary-500 font-bold text-lg mb-2">Baths</p>
+        <p className="text-primary-500 font-normal">{prop.baths}</p>
+    </div>
+    <div className="w-1/3 pr-4 inline-block">
+        <p className="text-primary-500 font-bold text-lg mb-2">Sqft</p>
+        <p className="text-primary-500 font-normal">{prop.sqft}</p>
+    </div>
+</div>
+                <div className="mb-4">
+                    <p className="text-primary-500 font-bold text-lg mb-2">Address</p>
+                    <p className="text-primary-500 font-normal">{prop.address}</p>
+                    <p className="text-primary-500 font-normal">{prop.city}, {prop.pin}</p>
+                    <p className="text-primary-500 font-normal">{prop.state}</p>
                 </div>
                 <div className="mt-2">
                     {isDiscover && <p className="text-sm text-gray-600">Seller Address: {prop.seller}</p>}

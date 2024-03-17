@@ -8,7 +8,7 @@ import { useRouter } from 'next/router';
 import VerifyFormUI from './components/ui/VerifyForm';
 import axios from 'axios';
 import { database } from './utils/firebaseConfig';
-import { ref, set, onValue, update } from 'firebase/database';
+import { ref, set, onValue, update, off } from 'firebase/database';
 import VerifyCardUI from './components/ui/VerifyCard';
 import download from 'downloadjs';
 
@@ -36,6 +36,7 @@ const VerifyProp = ({ web3, account, hashStorage, currentUserId, aadhaarName, is
     const [props, setProps] = useState([]);
     const [hasVerified, setHasVerified] = useState(false);
     const [approvalHandled, setApprovalHandled] = useState(false);
+    const [prevHasVerified, setPrevHasVerified] = useState(false);
     const did_prop_images = "did:key:z6Mkqm7U5ZScA7s4kc2qVtrFumvMFFLaucp9D144hRvzFFop";
     const did_all_props = "did:key:z6MkhfYqtJ5sehBMUbt82mEmijdxEGY8FmmJo98PSrTBDWht";
     const did_verify_docs = "did:key:z6MkgfG1bg3VJ2z6hacb326PVt8PHGX6cUfeb3iGYTnHTfMs";
@@ -47,10 +48,15 @@ const VerifyProp = ({ web3, account, hashStorage, currentUserId, aadhaarName, is
     useEffect(() => {
         if (isInspector) {
             loadPropsForInspector();
-        }
-        else {
+        } else {
             handleApproval();
+            
         }
+        return () => {
+            const verifiedRef = ref(database, `/verifyProp/${currentUserId}`);
+        off(verifiedRef);
+        }
+        // Cleanup function to detach the listener when the component unmounts
     }, [isInspector]);
 
     const handleApproval = async () => {
@@ -62,10 +68,15 @@ const VerifyProp = ({ web3, account, hashStorage, currentUserId, aadhaarName, is
                     console.log("Approval Started....");
                     const cid = snapshot.val().cid;
                     const metadata = snapshot.val().metadata;
+                    setMetadata(metadata);
                     const hasVerified = snapshot.val().hasVerified;
-                    if (hasVerified) {
-                        downloadDocument(metadata, cid);
+                    if (hasVerified === 'approve') {
+                        update(verifiedRef, {
+                            hasVerified : 'verified'
+                        })
+                        setApprovalHandled(true);
                     }
+                    
                 }
             });
         } catch (error) {
@@ -73,7 +84,15 @@ const VerifyProp = ({ web3, account, hashStorage, currentUserId, aadhaarName, is
         }
     };
 
-    const downloadDocument = async (metadata, cid) => {
+    useEffect(() => {
+      if(approvalHandled){
+        downloadDocument(metadata);
+        setApprovalHandled(false);
+      }
+    
+    }, [approvalHandled])
+    
+    const downloadDocument = async (metadatad) => {
         try {
             const response = await axios.get(metadata);
             console.log(response.data);
@@ -81,22 +100,19 @@ const VerifyProp = ({ web3, account, hashStorage, currentUserId, aadhaarName, is
             const response_blob = await axios.get(docLink, {
                 responseType: 'blob',
             });
-            download(response_blob.data, 'downloaded_image.jpg', 'image/jpeg');
+            console.log(response_blob);
+            download(response_blob.data, `doc_${response.data.name}.jpg`, 'image/jpeg');
             console.log(metadata);
             const ipfsLink = metadata;
             const parts = ipfsLink.split('.');
             console.log(parts);
             const cid = parts[0].substring(parts[0].lastIndexOf('/') + 1);
-            console.log(cid);
-            console.log(cid);
-
-            console.log(cid);
-            console.log("CID: ", cid);
+            console.log("MAIN CID: ", cid);
             toast({
                 title: 'Your HashKey',
                 description: `HashKey: ${cid} `,
                 status: 'success',
-                duration: 15000,
+                duration: null,
                 isClosable: true,
             });
             console.log('Image downloaded successfully!');
@@ -104,7 +120,40 @@ const VerifyProp = ({ web3, account, hashStorage, currentUserId, aadhaarName, is
             console.error('Error downloading document:', error);
         }
     };
+    
+    
+   
 
+    // const downloadDocument = async (metadata, cid) => {
+    //     try {
+    //         const response = await axios.get(metadata);
+    //         console.log(response.data);
+    //         const docLink = response.data.docLink;
+    //         const response_blob = await axios.get(docLink, {
+    //             responseType: 'blob',
+    //         });
+    //         console.log(response_blob);
+    //         download(response_blob.data, 'downloaded_image.jpg', 'image/jpeg');
+    //         console.log(metadata);
+    //         const ipfsLink = metadata;
+    //         const parts = ipfsLink.split('.');
+    //         console.log(parts);
+    //         const extractedCid = parts[0].substring(parts[0].lastIndexOf('/') + 1);
+    //         console.log(extractedCid);
+
+    //         toast({
+    //             title: 'Your HashKey',
+    //             description: `HashKey: ${extractedCid} `,
+    //             status: 'success',
+    //             duration: 15000,
+    //             isClosable: true,
+    //         });
+    //         console.log('Image downloaded successfully!');
+    //     } catch (error) {
+    //         console.error('Error downloading document:', error);
+    //     }
+    // };
+    
     const uploadToW3Storage = async (event) => {
         event.preventDefault();
         const file = event.target.files[0];
@@ -186,10 +235,10 @@ const VerifyProp = ({ web3, account, hashStorage, currentUserId, aadhaarName, is
         return errors;
     };
     const makeMetadata = async () => {
-        console.log(aadhaarName, image, name, price, beds, baths, address, city, pin, state, description);
+        console.log(aadhaarName, image, name, price, beds, baths, sqft, address, city, pin, state, description);
         try {
             setLoading(true);
-            const obj = { aadhaarName, image, name, price, beds, baths, address, city, pin, state, description };
+            const obj = { aadhaarName, image, name, price, beds, baths, sqft, address, city, pin, state, description };
             // Create a Blob from the JSON object
             const meta_blob = new Blob([JSON.stringify(obj)], { type: 'application/json' });
             // Create a File object from the Blob
@@ -289,7 +338,7 @@ const VerifyProp = ({ web3, account, hashStorage, currentUserId, aadhaarName, is
         set(verificationRef, {
             owner: aadhaarName,
             metadata: metadata,
-            hasVerified: false
+            hasVerified: 'pending'
         })
             .then(() => {
                 console.log("Added Successfully in Firebase!!");
@@ -324,6 +373,7 @@ const VerifyProp = ({ web3, account, hashStorage, currentUserId, aadhaarName, is
                 price,
                 beds,
                 baths,
+                sqft,
                 address,
                 city,
                 pin,
@@ -335,7 +385,7 @@ const VerifyProp = ({ web3, account, hashStorage, currentUserId, aadhaarName, is
             const metadata_cid = await uploadFileToW3(metdata_file, "did:key:z6MkgfG1bg3VJ2z6hacb326PVt8PHGX6cUfeb3iGYTnHTfMs");
             console.log(metadata_cid.toString());
             console.log(`https://${metadata_cid}.ipfs.w3s.link`);
-            setMetadata(`https://${metadata_cid}.ipfs.w3s.link`);
+            
             addInFirebase(currentUserId, aadhaarName, `https://${metadata_cid}.ipfs.w3s.link`, metadata_cid);
 
         } catch (error) {
@@ -351,7 +401,43 @@ const VerifyProp = ({ web3, account, hashStorage, currentUserId, aadhaarName, is
     }
 
 
+    // useEffect(() => {
+    //     const handleApproval = () => {
+    //         try {
+    //             console.log("Handling...");
+    //             const newVerifiedRef = ref(database, `/verifyProp/${currentUserId}`);
+    //             setVerifiedRef(newVerifiedRef);
+    //             const callback = (snapshot) => {
+    //                 if (snapshot.exists()) {
+    //                     console.log("Approval Started....");
+    //                     const hasVerified = snapshot.val().hasVerified;
+    //                     const cid = snapshot.val().cid;
+    //                     const metadata = snapshot.val().metadata;
+    //                     if (hasVerified === 'approve') {
+    //                         downloadDocument(metadata, cid);
+    //                         update(verifiedRef, {
+    //                             hasVerified : 'verified'
+    //                         })
+    //                     }
+    //                     setPrevHasVerified(hasVerified);
+    //                 }
+    //             };
+    //             onValue(newVerifiedRef, callback);
 
+    //             return () => {
+    //                 off(newVerifiedRef, 'value', callback);
+    //             };
+    //         } catch (error) {
+    //             console.error('Error downloading image:', error);
+    //         }
+    //     };
+
+    //     if (isInspector) {
+    //         loadPropsForInspector();
+    //     } else {
+    //         handleApproval();
+    //     }
+    // }, [isInspector]);
 
     //Inspector
 
@@ -368,7 +454,7 @@ const VerifyProp = ({ web3, account, hashStorage, currentUserId, aadhaarName, is
             for (const userId in data) {
                 if (Object.hasOwnProperty.call(data, userId)) {
                     console.log(data[userId], data[userId].hasVerified);
-                    if (!data[userId].hasVerified) {
+                    if (data[userId].hasVerified === 'pending') {
                         const userProps = data[userId];
                         // Extract metadata from each user's properties
                         const metadata = userProps.metadata;
@@ -387,6 +473,7 @@ const VerifyProp = ({ web3, account, hashStorage, currentUserId, aadhaarName, is
                             price: alldata.price,
                             beds: alldata.beds,
                             baths: alldata.baths,
+                            sqft: alldata.sqft,
                             address: alldata.address,
                             city: alldata.city,
                             pin: alldata.pin,
@@ -408,7 +495,7 @@ const VerifyProp = ({ web3, account, hashStorage, currentUserId, aadhaarName, is
         const verificationRef = ref(database, `/verifyProp/${prop.currentUserId}`);
         try {
             await update(verificationRef, {
-                hasVerified: true
+                hasVerified: 'approve'
             });
             console.log("Updated Successfully in Firebase!!");
             toast({
@@ -514,53 +601,62 @@ const VerifyProp = ({ web3, account, hashStorage, currentUserId, aadhaarName, is
                     </div>
                     {ok}
                     <div className='flex-1'>
-                        <div className="flex justify-center items-center h-screen">
-                            <div id="hidden-div" className="bg-gray-100 border border-gray-300 p-6 shadow-lg rounded-lg w-full max-w-md">
-                                {image && <div className="flex justify-center mb-4">
-                                    <img src={image} className="rounded-lg" alt="Property Image" />
-                                </div>}
-                                <div className="mb-4">
-                                    <h2 className="text-lg font-semibold mb-2">Property Information</h2>
-                                    <div className="flex flex-wrap">
-                                        <div className="w-full md:w-1/2 mb-2">
-                                            <span className="font-bold">Owner:</span> {aadhaarName}
-                                        </div>
-                                        <div className="w-full md:w-1/2 mb-2">
-                                            <span className="font-bold">Name:</span> {name}
-                                        </div>
-                                        <div className="w-full md:w-1/2 mb-2">
-                                            <span className="font-bold">Price:</span> {price}
-                                        </div>
-                                        <div className="w-full md:w-1/2 mb-2">
-                                            <span className="font-bold">Beds:</span> {beds}
-                                        </div>
-                                        <div className="w-full md:w-1/2 mb-2">
-                                            <span className="font-bold">Baths:</span> {baths}
-                                        </div>
-                                        <div className="w-full md:w-1/2 mb-2">
-                                            <span className="font-bold">Sqft:</span> {sqft}
-                                        </div>
-                                        <div className="w-full md:w-1/2 mb-2">
-                                            <span className="font-bold">Address:</span> {address}
-                                        </div>
-                                        <div className="w-full md:w-1/2 mb-2">
-                                            <span className="font-bold">City:</span> {city}
-                                        </div>
-                                        <div className="w-full md:w-1/2 mb-2">
-                                            <span className="font-bold">PIN:</span> {pin}
-                                        </div>
-                                        <div className="w-full md:w-1/2 mb-2">
-                                            <span className="font-bold">State:</span> {state}
-                                        </div>
-                                    </div>
-                                </div>
-                                <div className="text-sm text-gray-600">
-                                    <p>This document contains property information and is intended for internal use only.</p>
-                                    <p>Do not share this document with unauthorized individuals.</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                    <div className="flex flex-col justify-center items-center h-screen">
+    <div id="hidden-div" className="bg-gray-100 border border-gray-300 p-6 shadow-lg rounded-lg w-full max-w-md">
+        {/* Title and Logo */}
+        <div className="flex justify-center mb-4">
+            {/* Logo */}
+            <img src="./house_logo.png" className="h-7 w-auto mr-2" alt="Logo" />
+            {/* Title */}
+            <h2 className="text-lg font-semibold">RealBuilders</h2>
+        </div>
+
+        <h2 className="text-lg font-semibold">Property Information</h2>
+        {/* Property Information */}
+        {image && <div className="flex justify-center mb-4">
+            <img src={image} className="rounded-lg" alt="Property Image" />
+        </div>}
+        <div className="mb-4">
+            <div className="flex flex-wrap">
+                <div className="w-full md:w-1/2 mb-2">
+                    <span className="font-bold">Owner:</span> {aadhaarName}
+                </div>
+                <div className="w-full md:w-1/2 mb-2">
+                    <span className="font-bold">Name:</span> {name}
+                </div>
+                <div className="w-full md:w-1/2 mb-2">
+                    <span className="font-bold">Price:</span> {price}
+                </div>
+                <div className="w-full md:w-1/2 mb-2">
+                    <span className="font-bold">Beds:</span> {beds}
+                </div>
+                <div className="w-full md:w-1/2 mb-2">
+                    <span className="font-bold">Baths:</span> {baths}
+                </div>
+                <div className="w-full md:w-1/2 mb-2">
+                    <span className="font-bold">Sqft:</span> {sqft}
+                </div>
+                <div className="w-full md:w-1/2 mb-2">
+                    <span className="font-bold">Address:</span> {address}
+                </div>
+                <div className="w-full md:w-1/2 mb-2">
+                    <span className="font-bold">City:</span> {city}
+                </div>
+                <div className="w-full md:w-1/2 mb-2">
+                    <span className="font-bold">PIN:</span> {pin}
+                </div>
+                <div className="w-full md:w-1/2 mb-2">
+                    <span className="font-bold">State:</span> {state}
+                </div>
+            </div>
+        </div>
+        <div className="text-sm text-gray-600">
+            <p>This document contains property information and is intended for internal use only.</p>
+            <p>Do not share this document with unauthorized individuals.</p>
+        </div>
+    </div>
+</div>
+</div>
 
                 </div>)
             }

@@ -95,6 +95,13 @@ const Discover = ({ web3, account, realEstate, escrow, isInspector }) => {
                   name: metadata.name,
                   description: metadata.description,
                   image: metadata.image,
+                  beds: metadata.beds,
+                  baths: metadata.baths,
+                  sqft: metadata.sqft,
+                  address: metadata.address,
+                  city: metadata.city,
+                  pin: metadata.pin,
+                  state: metadata.state,
                   hasBought: hasBoughtStatus,
                   owner: ownerName
                 });
@@ -149,6 +156,13 @@ const Discover = ({ web3, account, realEstate, escrow, isInspector }) => {
                 name: metadata.name,
                 description: metadata.description,
                 image: metadata.image,
+                beds: metadata.beds,
+                baths: metadata.baths,
+                sqft: metadata.sqft,
+                address: metadata.address,
+                city: metadata.city,
+                pin: metadata.pin,
+                state: metadata.state,
                 owner: ownerName
               })
             }
@@ -308,8 +322,8 @@ const Discover = ({ web3, account, realEstate, escrow, isInspector }) => {
     <div className="mt-5 mb-10">
       <div className="flex items-center justify-between mb-4">
         <div className="flex-1">
-      <h1 className="text-3xl font-bold font-serif text-center">Propertiess</h1>
-    </div>
+          <h1 className="text-3xl font-bold font-serif text-center">Propertiess</h1>
+        </div>
         <button
           className="btn btn-square btn-ghost sm:btn-sm md:btn-md lg:btn-md mr-4"
           onClick={reLoadPage}

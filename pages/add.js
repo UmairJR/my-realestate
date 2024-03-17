@@ -24,6 +24,7 @@ const Add = ({ web3, account, realEstate, escrow, escrow_address, realEstate_add
     const [state, setState] = useState('');
     const [disabled, setDisabled] = useState(true);
     const [loading, setLoading] = useState(false);
+    const [isVerified, setIsVerified] = useState(false);
     const did_all_props = "did:key:z6MkhfYqtJ5sehBMUbt82mEmijdxEGY8FmmJo98PSrTBDWht";
 
     useEffect(() => {
@@ -38,33 +39,47 @@ const Add = ({ web3, account, realEstate, escrow, escrow_address, realEstate_add
     const verifyHashKey = async (hashKey) => {
         const url = `https://${hashKey}.ipfs.w3s.link`;
         try {
+            setLoading(true);
             const response = await axios.get(url);
             console.log(response.data);
-        const metadata = response.data;
-        const docHash = metadata.docHash;
-        console.log("Blockchain stored hash: ", docHash);
-        const isStored = await hashStorage.methods.isStored(docHash).call();
-        console.log("isStored: ", isStored);
-        if (isStored) {
-            toast({
-                title: 'Valid Seller',
-                description: 'You are a Valid seller!',
-                status: 'success',
-                duration: 4000,
-                isClosable: true,
-            });
-            setDisabled(false);
-        }
-        else {
-            toast({
-                title: 'Not a Valid Seller',
-                description: 'You are a Not a valid seller!',
-                status: 'error',
-                duration: 4000,
-                isClosable: true,
-            });
-            setDisabled(true);
-        }
+            const metadata = response.data;
+            const docHash = metadata.docHash;
+            setImage(metadata.image);
+            setName(metadata.name);
+            setPrice(metadata.price);
+            setDescription(metadata.description);
+            setBeds(metadata.beds);
+            setBaths(metadata.baths);
+            setPin(metadata.pin);
+            setSqft(metadata.sqft);
+            setAddress(metadata.address);
+            setCity(metadata.city);
+            setState(metadata.state); console.log("Blockchain stored hash: ", docHash);
+            const isStored = await hashStorage.methods.isStored(docHash).call();
+            console.log("isStored: ", isStored);
+            if (isStored) {
+                toast({
+                    title: 'Valid Seller',
+                    description: 'You are a Valid seller!',
+                    status: 'success',
+                    duration: 4000,
+                    isClosable: true,
+                });
+                setDisabled(false);
+                setIsVerified(true);
+            }
+            else {
+                toast({
+                    title: 'Not a Valid Seller',
+                    description: 'You are a Not a valid seller!',
+                    status: 'error',
+                    duration: 4000,
+                    isClosable: true,
+                });
+                setDisabled(true);
+                setIsVerified(false);
+            }
+            setLoading(false);
         }
         catch (error) {
             if (error.response && error.response.status === 400) {
@@ -77,6 +92,7 @@ const Add = ({ web3, account, realEstate, escrow, escrow_address, realEstate_add
                     isClosable: true,
                 });
                 setDisabled(true);
+                setIsVerified(false);
             } else {
                 console.error('Error verifying hash key:', error);
             }
@@ -119,11 +135,11 @@ const Add = ({ web3, account, realEstate, escrow, escrow_address, realEstate_add
     };
 
     const createNFT = async () => {
-        if (!image || !price || !name || !description) return;
+        if (!image || !name || !price || !beds || !baths || !sqft || !description || !address || !city || !pin || !state) return;
         try {
             setLoading(true);
             await initializeW3UpClient();
-            const obj = { image, price, name, description };
+            const obj = { image, price, name, beds, baths, sqft, description, address, city, pin, state };
             // Create a Blob from the JSON object
             const blob = new Blob([JSON.stringify(obj)], { type: 'application/json' });
             // Create a File object from the Blob
@@ -207,16 +223,18 @@ const Add = ({ web3, account, realEstate, escrow, escrow_address, realEstate_add
     return (
         <>
             <FormUI
-                setName={setName}
-                setPrice={setPrice}
-                setBeds={setBeds}
-                setBaths={setBaths}
-                setSqft={setSqft}
-                setDescription={setDescription}
-                setAddress={setAddress}
-                setCity={setCity}
-                setPin={setPin}
-                setState={setState}
+                isVerified={isVerified}
+                image={image}
+                name={name}
+                price={price}
+                beds={beds}
+                baths={baths}
+                sqft={sqft}
+                description={description}
+                address={address}
+                city={city}
+                pin={pin}
+                state={state}
                 uploadToW3Storage={uploadToW3Storage}
                 disabled={disabled}
                 createNFT={createNFT}
