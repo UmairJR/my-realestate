@@ -27,14 +27,7 @@ const Add = ({ web3, account, realEstate, escrow, escrow_address, realEstate_add
     const [isVerified, setIsVerified] = useState(false);
     const did_all_props = "did:key:z6MkhfYqtJ5sehBMUbt82mEmijdxEGY8FmmJo98PSrTBDWht";
 
-    useEffect(() => {
-        toast({
-            title: 'Upload Image to proceed',
-            status: 'info',
-            duration: 3000,
-            isClosable: true
-        });
-    }, []);
+   
 
     const verifyHashKey = async (hashKey) => {
         const url = `https://${hashKey}.ipfs.w3s.link`;
@@ -67,6 +60,7 @@ const Add = ({ web3, account, realEstate, escrow, escrow_address, realEstate_add
                 });
                 setDisabled(false);
                 setIsVerified(true);
+                
             }
             else {
                 toast({
@@ -93,9 +87,20 @@ const Add = ({ web3, account, realEstate, escrow, escrow_address, realEstate_add
                 });
                 setDisabled(true);
                 setIsVerified(false);
+                
             } else {
                 console.error('Error verifying hash key:', error);
+                toast({
+                    title: 'Not a Valid Seller',
+                    description: 'You are a Not a valid seller!',
+                    status: 'error',
+                    duration: 4000,
+                    isClosable: true,
+                });
+                setDisabled(true);
+                setIsVerified(false);
             }
+            setLoading(false);
         }
     }
 

@@ -18,7 +18,7 @@ const VerifyFormUI = ({
     validateFields,
     verifyProp,
     errors,
-    makeCanvas
+    sendRequest,
 }) => {
 
 
@@ -124,7 +124,7 @@ const VerifyFormUI = ({
                 {errors.description && <p className="text-red-500">{errors.description}</p>}
                 <button
                     className="btn btn-primary sm:btn-sm md:btn-md lg:btn-md btn-wide"
-                    onClick={makeCanvas}
+                    onClick={sendRequest}
                     disabled={disabled}
                 >
                     Verify Property!

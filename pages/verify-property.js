@@ -37,6 +37,7 @@ const VerifyProp = ({ web3, account, hashStorage, currentUserId, aadhaarName, is
     const [hasVerified, setHasVerified] = useState(false);
     const [approvalHandled, setApprovalHandled] = useState(false);
     const [prevHasVerified, setPrevHasVerified] = useState(false);
+    const [waiting, setWaiting] = useState(false);
     const did_prop_images = "did:key:z6Mkqm7U5ZScA7s4kc2qVtrFumvMFFLaucp9D144hRvzFFop";
     const did_all_props = "did:key:z6MkhfYqtJ5sehBMUbt82mEmijdxEGY8FmmJo98PSrTBDWht";
     const did_verify_docs = "did:key:z6MkgfG1bg3VJ2z6hacb326PVt8PHGX6cUfeb3iGYTnHTfMs";
@@ -50,11 +51,11 @@ const VerifyProp = ({ web3, account, hashStorage, currentUserId, aadhaarName, is
             loadPropsForInspector();
         } else {
             handleApproval();
-            
+
         }
         return () => {
             const verifiedRef = ref(database, `/verifyProp/${currentUserId}`);
-        off(verifiedRef);
+            off(verifiedRef);
         }
         // Cleanup function to detach the listener when the component unmounts
     }, [isInspector]);
@@ -72,11 +73,11 @@ const VerifyProp = ({ web3, account, hashStorage, currentUserId, aadhaarName, is
                     const hasVerified = snapshot.val().hasVerified;
                     if (hasVerified === 'approve') {
                         update(verifiedRef, {
-                            hasVerified : 'verified'
+                            hasVerified: 'verified'
                         })
                         setApprovalHandled(true);
                     }
-                    
+
                 }
             });
         } catch (error) {
@@ -85,14 +86,14 @@ const VerifyProp = ({ web3, account, hashStorage, currentUserId, aadhaarName, is
     };
 
     useEffect(() => {
-      if(approvalHandled){
-        downloadDocument(metadata);
-        setApprovalHandled(false);
-      }
-    
+        if (approvalHandled) {
+            downloadDocument(metadata);
+            setApprovalHandled(false);
+        }
+
     }, [approvalHandled])
-    
-    const downloadDocument = async (metadatad) => {
+
+    const downloadDocument = async (metadata) => {
         try {
             const response = await axios.get(metadata);
             console.log(response.data);
@@ -108,21 +109,23 @@ const VerifyProp = ({ web3, account, hashStorage, currentUserId, aadhaarName, is
             console.log(parts);
             const cid = parts[0].substring(parts[0].lastIndexOf('/') + 1);
             console.log("MAIN CID: ", cid);
+            download(cid, `hashkey_${response.data.name}.txt`, "text/plain");
             toast({
-                title: 'Your HashKey',
-                description: `HashKey: ${cid} `,
+                title: 'Document Downloaded',
+                description: `Verified Document Downloaded - HashKey: ${cid} `,
                 status: 'success',
-                duration: null,
+                duration: 10000,
                 isClosable: true,
             });
             console.log('Image downloaded successfully!');
+            setWaiting(false);
         } catch (error) {
             console.error('Error downloading document:', error);
         }
     };
-    
-    
-   
+
+
+
 
     // const downloadDocument = async (metadata, cid) => {
     //     try {
@@ -153,7 +156,7 @@ const VerifyProp = ({ web3, account, hashStorage, currentUserId, aadhaarName, is
     //         console.error('Error downloading document:', error);
     //     }
     // };
-    
+
     const uploadToW3Storage = async (event) => {
         event.preventDefault();
         const file = event.target.files[0];
@@ -306,6 +309,13 @@ const VerifyProp = ({ web3, account, hashStorage, currentUserId, aadhaarName, is
     //         // document.body.removeChild(hiddenDiv);
     //     }, 500); // Adjust the delay as needed to ensure proper rendering
     // };
+
+    const sendRequest = () => {
+        setLoading(true);
+        makeCanvas();
+        setLoading(false);
+    }
+
     const makeCanvas = () => {
         const hiddenDiv = document.getElementById('hidden-div');
 
@@ -341,7 +351,16 @@ const VerifyProp = ({ web3, account, hashStorage, currentUserId, aadhaarName, is
             hasVerified: 'pending'
         })
             .then(() => {
+
                 console.log("Added Successfully in Firebase!!");
+                toast({
+                    title: 'Request Sent!',
+                    description: 'Request for verification has been sent successfully!',
+                    status: 'success',
+                    duration: 4000,
+                    isClosable: true,
+                });
+                setWaiting(true);
             })
             .catch((error) => {
                 console.log(error);
@@ -385,7 +404,7 @@ const VerifyProp = ({ web3, account, hashStorage, currentUserId, aadhaarName, is
             const metadata_cid = await uploadFileToW3(metdata_file, "did:key:z6MkgfG1bg3VJ2z6hacb326PVt8PHGX6cUfeb3iGYTnHTfMs");
             console.log(metadata_cid.toString());
             console.log(`https://${metadata_cid}.ipfs.w3s.link`);
-            
+
             addInFirebase(currentUserId, aadhaarName, `https://${metadata_cid}.ipfs.w3s.link`, metadata_cid);
 
         } catch (error) {
@@ -438,6 +457,7 @@ const VerifyProp = ({ web3, account, hashStorage, currentUserId, aadhaarName, is
     //         handleApproval();
     //     }
     // }, [isInspector]);
+
 
     //Inspector
 
@@ -498,17 +518,18 @@ const VerifyProp = ({ web3, account, hashStorage, currentUserId, aadhaarName, is
                 hasVerified: 'approve'
             });
             console.log("Updated Successfully in Firebase!!");
-            toast({
-                title: 'Property Verified',
-                description: `${prop.userName}'s property has been verified successfully!`,
-                status: 'success',
-                duration: 4000,
-                isClosable: true,
-            });
+
 
             const isStored = await hashStorage.methods.isStored(prop.docHash).call();
             console.log("isStored: ", isStored);
             if (!isStored) {
+                toast({
+                    title: 'Property Verified',
+                    description: `${prop.userName}'s property has been verified successfully!`,
+                    status: 'success',
+                    duration: 4000,
+                    isClosable: true,
+                });
                 console.log("docHash: ", prop.docHash);
                 console.log("Account: ", account);
                 const tx = await hashStorage.methods.storeHashKey(prop.docHash).send({
@@ -595,72 +616,73 @@ const VerifyProp = ({ web3, account, hashStorage, currentUserId, aadhaarName, is
                             verifyProp={verifyProp}
                             errors={errors}
                             disabled={disabled}
-                            makeCanvas={makeCanvas}
+                            sendRequest={sendRequest}
                             loading={loading}
                         />
                     </div>
                     {ok}
                     <div className='flex-1'>
-                    <div className="flex flex-col justify-center items-center h-screen">
-    <div id="hidden-div" className="bg-gray-100 border border-gray-300 p-6 shadow-lg rounded-lg w-full max-w-md">
-        {/* Title and Logo */}
-        <div className="flex justify-center mb-4">
-            {/* Logo */}
-            <img src="./house_logo.png" className="h-7 w-auto mr-2" alt="Logo" />
-            {/* Title */}
-            <h2 className="text-lg font-semibold">RealBuilders</h2>
-        </div>
+                        <div className="flex flex-col justify-center items-center h-screen">
+                            <div id="hidden-div" className="bg-gray-100 border border-gray-300 p-6 shadow-lg rounded-lg w-full max-w-md">
+                                {/* Title and Logo */}
+                                <div className="flex justify-center mb-4">
+                                    {/* Logo */}
+                                    <img src="./house_logo.png" className="h-7 w-auto mr-2" alt="Logo" />
+                                    {/* Title */}
+                                    <h2 className="text-lg font-semibold">RealBuilders</h2>
+                                </div>
 
-        <h2 className="text-lg font-semibold">Property Information</h2>
-        {/* Property Information */}
-        {image && <div className="flex justify-center mb-4">
-            <img src={image} className="rounded-lg" alt="Property Image" />
-        </div>}
-        <div className="mb-4">
-            <div className="flex flex-wrap">
-                <div className="w-full md:w-1/2 mb-2">
-                    <span className="font-bold">Owner:</span> {aadhaarName}
-                </div>
-                <div className="w-full md:w-1/2 mb-2">
-                    <span className="font-bold">Name:</span> {name}
-                </div>
-                <div className="w-full md:w-1/2 mb-2">
-                    <span className="font-bold">Price:</span> {price}
-                </div>
-                <div className="w-full md:w-1/2 mb-2">
-                    <span className="font-bold">Beds:</span> {beds}
-                </div>
-                <div className="w-full md:w-1/2 mb-2">
-                    <span className="font-bold">Baths:</span> {baths}
-                </div>
-                <div className="w-full md:w-1/2 mb-2">
-                    <span className="font-bold">Sqft:</span> {sqft}
-                </div>
-                <div className="w-full md:w-1/2 mb-2">
-                    <span className="font-bold">Address:</span> {address}
-                </div>
-                <div className="w-full md:w-1/2 mb-2">
-                    <span className="font-bold">City:</span> {city}
-                </div>
-                <div className="w-full md:w-1/2 mb-2">
-                    <span className="font-bold">PIN:</span> {pin}
-                </div>
-                <div className="w-full md:w-1/2 mb-2">
-                    <span className="font-bold">State:</span> {state}
-                </div>
-            </div>
-        </div>
-        <div className="text-sm text-gray-600">
-            <p>This document contains property information and is intended for internal use only.</p>
-            <p>Do not share this document with unauthorized individuals.</p>
-        </div>
-    </div>
-</div>
-</div>
+                                <h2 className="text-lg font-semibold">Property Information</h2>
+                                {/* Property Information */}
+                                {image && <div className="flex justify-center mb-4">
+                                    <img src={image} className="rounded-lg" alt="Property Image" />
+                                </div>}
+                                <div className="mb-4">
+                                    <div className="flex flex-wrap">
+                                        <div className="w-full md:w-1/2 mb-2">
+                                            <span className="font-bold">Owner:</span> {aadhaarName}
+                                        </div>
+                                        <div className="w-full md:w-1/2 mb-2">
+                                            <span className="font-bold">Name:</span> {name}
+                                        </div>
+                                        <div className="w-full md:w-1/2 mb-2">
+                                            <span className="font-bold">Price:</span> {price}
+                                        </div>
+                                        <div className="w-full md:w-1/2 mb-2">
+                                            <span className="font-bold">Beds:</span> {beds}
+                                        </div>
+                                        <div className="w-full md:w-1/2 mb-2">
+                                            <span className="font-bold">Baths:</span> {baths}
+                                        </div>
+                                        <div className="w-full md:w-1/2 mb-2">
+                                            <span className="font-bold">Sqft:</span> {sqft}
+                                        </div>
+                                        <div className="w-full md:w-1/2 mb-2">
+                                            <span className="font-bold">Address:</span> {address}
+                                        </div>
+                                        <div className="w-full md:w-1/2 mb-2">
+                                            <span className="font-bold">City:</span> {city}
+                                        </div>
+                                        <div className="w-full md:w-1/2 mb-2">
+                                            <span className="font-bold">PIN:</span> {pin}
+                                        </div>
+                                        <div className="w-full md:w-1/2 mb-2">
+                                            <span className="font-bold">State:</span> {state}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="text-sm text-gray-600">
+                                    <p>This document contains property information and is intended for internal use only.</p>
+                                    <p>Do not share this document with unauthorized individuals.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
 
                 </div>)
             }
-            {doc && <img src={doc} />}
+            {/* {doc && <img src={doc} />} */}
+            {waiting && <h3> Request sent. Waiting....</h3>}
         </>
     )
 }
