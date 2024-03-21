@@ -598,7 +598,7 @@ const VerifyProp = ({ web3, account, hashStorage, currentUserId, aadhaarName, is
                     </div>
                 </div>
             ) : (
-                <div className='flex gap-2'>
+                <div className='flex gap-2 items-center pt-5'>
                     <div className='flex-1'>
                         <VerifyFormUI
                             setName={setName}
@@ -622,7 +622,7 @@ const VerifyProp = ({ web3, account, hashStorage, currentUserId, aadhaarName, is
                     </div>
                     {ok}
                     <div className='flex-1'>
-                        <div className="flex flex-col justify-center items-center h-screen">
+                        <div className="flex flex-col justify-center items-center">
                             <div id="hidden-div" className="bg-gray-100 border border-gray-300 p-6 shadow-lg rounded-lg w-full max-w-md">
                                 {/* Title and Logo */}
                                 <div className="flex justify-center mb-4">
@@ -635,7 +635,7 @@ const VerifyProp = ({ web3, account, hashStorage, currentUserId, aadhaarName, is
                                 <h2 className="text-lg font-semibold">Property Information</h2>
                                 {/* Property Information */}
                                 {image && <div className="flex justify-center mb-4">
-                                    <img src={image} className="rounded-lg" alt="Property Image" />
+                                    <img src={image} className=" rounded-lg" alt="Property Image" />
                                 </div>}
                                 <div className="mb-4">
                                     <div className="flex flex-wrap">
