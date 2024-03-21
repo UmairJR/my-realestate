@@ -5,6 +5,8 @@ import {ref, get, push,set} from "firebase/database";
 import { useRouter } from 'next/navigation';
 import axios from 'axios';
 import { auth, database } from './utils/firebaseConfig';
+import ButtonLoader from './components/ButtonLoader';
+import Link from 'next/link';
 
 
 const SignUp = () => {
@@ -54,9 +56,8 @@ const SignUp = () => {
             console.error(error);
             setError('Failed to send OTP. Please try again.');
             alert('Failed to send OTP. Please try again.');
-        } finally {
-            setLoading(false);
         }
+        setLoading(false);
     }
 
     async function submitOtp(e) {
@@ -143,7 +144,8 @@ const SignUp = () => {
 
   return (
     <div className='min-h-screen flex items-center justify-center bg-gray-900'>
-        <div className="bg-gray-800 p-10 rounded-lg shadow-xl w-96">
+        <div className={`bg-gray-800 p-${step === 3 ? 6 : 10} rounded-lg shadow-xl w-96`}>
+        <h1 className="text-white text-2xl mb-5 font-bold text-center">Sign Up</h1>
         {step === 1 && (
             <>
             <input
@@ -156,9 +158,9 @@ const SignUp = () => {
 
             <button 
             onClick={sendOtp} disabled={loading}
-            className="w-full p-3 bg-indigo-600 rounded text-white hover:bg-indigo-500">SUBMIT</button>
+            className="w-full p-3 bg-indigo-600 rounded text-white hover:bg-indigo-500">{loading ? <ButtonLoader /> : `SUBMIT`}</button>
 
-            {error && <p className="error">{error}</p>}
+            {error && <p className="text-red-400 error">{error}</p>}
             </>
         )}
         {step === 2 && (
@@ -173,30 +175,28 @@ const SignUp = () => {
             />
             <button 
             onClick={submitOtp} disabled={loading}
-            className="w-full p-3 bg-indigo-600 rounded text-white hover:bg-indigo-500">Submit OTP</button>
-            {error && <p className="error">{error}</p>}
+            className="w-full p-3 bg-indigo-600 rounded text-white hover:bg-indigo-500">{loading ? <ButtonLoader /> : `Submit OTP`}</button>
+            {error && <p className="text-red-400 error">{error}</p>}
             </>
         )}
         {step === 3 && (
             <>
             {aadhaarData ? (
-                    <>
+                    <div className="flex justify-between mb-6">
                         {aadhaarPhoto && (
-                            <img src={`data:image/jpeg;base64,${aadhaarPhoto}`} alt="Aadhar Photo" />
+                            <img className="w-24 rounded" src={`data:image/jpeg;base64,${aadhaarPhoto}`} alt="Aadhar Photo" />
                         )}
-                        <h4>Aadhaar Name: {aadhaarData.name || 'N/A'}</h4>
-                        <h4>Locality: {aadhaarData.locality || 'N/A'}</h4>
-                        <h4>DOB: {aadhaarData.date_of_birth || 'N/A'}</h4>
-                    </>
+                        <div>
+                            <h4 className="text-white">Name: {aadhaarData.name || 'N/A'}</h4>
+                            <h4 className="text-white">DOB: {aadhaarData.date_of_birth || 'N/A'}</h4>
+                        </div>
+                    </div>
                 ) : (
                     <>
                         <h4>Aadhaar Name: N/A</h4>
-                        <h4>Locality: N/A</h4>
                         <h4>DOB: N/A</h4>
                     </>
                 )}
-                    <h2 className="text-white text-2xl mb-5" >Registration Form</h2>
-                    
                     <input 
                     type="email" 
                     placeholder="Email" 
@@ -215,15 +215,16 @@ const SignUp = () => {
                     />
                     <input type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)}
                     placeholder="Confirm Password" 
-                    className="w-full p-3 mb-4 bg-gray-700 rounded outline-none text-white placeholder-gray-500"
+                    className="w-full p-3 mb-12 bg-gray-700 rounded outline-none text-white placeholder-gray-500"
                     />
                     <button 
                     onClick={userRegister} disabled={loading}
-                    className="w-full p-3 bg-indigo-600 rounded text-white hover:bg-indigo-500">Register</button>
+                    className="w-full p-3 bg-indigo-600 rounded text-white hover:bg-indigo-500">{loading ? <ButtonLoader /> : `Register` }</button>
 
                     {error && <p style={{ color: 'red' }}>{error}</p>}
             </>
         )}
+        <span className="text-sm text-white mt-5 text-center block">Already registered? <Link className="text-indigo-600" href={'/login'}>Sign In</Link> </span>
         </div>
     </div>
   );

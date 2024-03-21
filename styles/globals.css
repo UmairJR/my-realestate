@@ -31,3 +31,39 @@ body {
     text-wrap: balance;
   }
 }  */
+
+.loader {
+  width: 100px;
+  height: 100%;
+  position: relative;
+  margin: 0 auto;
+}
+.loader span {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border-radius: 100%;
+  background-color: #fff;
+  margin: 0 5px;
+  opacity: 0;
+}
+.loader span:nth-child(1) {
+  animation: opacitychange 1s ease-in-out infinite;
+}
+.loader span:nth-child(2) {
+  animation: opacitychange 1s ease-in-out 0.33s infinite;
+}
+.loader span:nth-child(3) {
+  animation: opacitychange 1s ease-in-out 0.66s infinite;
+}
+
+@keyframes opacitychange {
+  0%,
+  100% {
+    opacity: 0;
+  }
+
+  60% {
+    opacity: 1;
+  }
+}
