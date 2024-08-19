@@ -4,7 +4,7 @@
 ### Video Demo
 
 <iframe src="https://drive.google.com/file/d/1OHzfel5b-3Esc9fuxl-_dp909tATY_1Y/preview" width="640" height="480"></iframe>
-[![Watch the video](https://raw.githubusercontent.com/UmairJR/my-realestate/main/Major_Project_Demo.mp4)](https://raw.githubusercontent.com/UmairJR/my-realestate/main/Major_Project_Demo.mp4)
+[![Watch the video](https://raw.githubusercontent.com/UmairJR/my-realestate/main/thumbnail.png)](https://raw.githubusercontent.com/UmairJR/my-realestate/main/Major_Project_Demo.mp4)
 
 ## Table of Contents
 - [Project Overview](#project-overview)
