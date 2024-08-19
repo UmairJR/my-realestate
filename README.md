@@ -1,13 +1,8 @@
 # Fraud Prevention in Real Estate using Blockchain
-## Project Overview
-
-### Video Demo
-
-<iframe src="https://drive.google.com/file/d/1OHzfel5b-3Esc9fuxl-_dp909tATY_1Y/preview" width="640" height="480"></iframe>
-[![Watch the video](https://raw.githubusercontent.com/UmairJR/my-realestate/main/thumbnail.png)](https://raw.githubusercontent.com/UmairJR/my-realestate/main/Major_Project_Demo.mp4)
 
 ## Table of Contents
 - [Project Overview](#project-overview)
+- [Video Demo](#video-demo)
 - [Features](#features)
 - [Tech Stack](#tech-stack)
 - [System Architecture](#system-architecture)
@@ -16,6 +11,10 @@
 
 ## Project Overview
 This project aims to prevent fraud in real estate transactions by leveraging blockchain technology. By automating the verification and transfer of property ownership, the system ensures security, transparency, and integrity in real estate dealings. The project also includes role-based access control for users, inspectors, and buyers, as well as the use of NFTs (Non-Fungible Tokens) to uniquely represent property ownership.
+
+## Video Demo
+
+[![Watch the video](https://raw.githubusercontent.com/UmairJR/my-realestate/main/thumbnail.png)](https://raw.githubusercontent.com/UmairJR/my-realestate/main/Major_Project_Demo.mp4)
 
 ## Features
 - **Blockchain-Backed Transactions:** Secure real estate transactions using Ethereum blockchain and smart contracts.
