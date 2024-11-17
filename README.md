@@ -9,6 +9,9 @@
 - [Installation](#installation)
 - [Usage](#usage)
 
+## Drive Link - For Documents/Thesis/Certificates (For University Purpose only)
+https://drive.google.com/drive/folders/1anRfm57rsMRcP4UD8ySw0GnmUk9gk6Z7?usp=sharing
+
 ## Project Overview
 This project aims to prevent fraud in real estate transactions by leveraging blockchain technology. By automating the verification and transfer of property ownership, the system ensures security, transparency, and integrity in real estate dealings. The project also includes role-based access control for users, inspectors, and buyers, as well as the use of NFTs (Non-Fungible Tokens) to uniquely represent property ownership.
 
